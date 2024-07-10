@@ -104,27 +104,29 @@ def scale_weights(weights, interactions):
 
 def dataset_build(ratings, curr_ratings, book_features):
 
+    joint_ratings = pd.concat([ratings, curr_ratings], axis = 0)
     dataset = Dataset()
-    dataset.fit((x['user_id'] for x in ratings+curr_ratings),
-                (x['book_id'] for x in ratings+curr_ratings),
-                (x['rating'] for x in ratings+curr_ratings))  
+    dataset.fit((x.user_id for x in joint_ratings.itertuples()),
+                (x.book_id for x in joint_ratings.itertuples()),
+                (x.rating for x in joint_ratings.itertuples()))  
 
-    dataset.fit_partial(items=(x['book_id'] for x in book_features),
-                        item_features=(x['authors'] for x in book_features))
+    dataset.fit_partial(items=(x.book_id for x in book_features.itertuples()),
+                        item_features=(x.authors for x in book_features.itertuples()))
 
-    item_features = dataset.build_item_features(((x['book_id']), [x['authors']])
-                                                for x in book_features)
+    item_features = dataset.build_item_features(((x.book_id), [x.authors])
+                                                for x in book_features.itertuples())
 
     return dataset, item_features
 
 def return_interactions(dataset, curr_ratings):
-    (interactions, weights) = dataset.build_interactions((x['user_id'], x['book_id'], int(x['rating'])) 
-                                                      for x in ratings+curr_ratings)
+
+    joint_ratings = pd.concat([ratings, curr_ratings], axis = 0)
+    (interactions, weights) = dataset.build_interactions((x.user_id, x.book_id, int(x.rating)) 
+                                                      for x in joint_ratings.itertuples())
     return (interactions, weights)
 
 def get_predictions(dataset, user_ids, model, weights, book_features):
 
-    cont = st.container(border=True)
     num_users, num_items = weights.shape
 
     weight = weights.tocsr()
@@ -137,13 +139,13 @@ def get_predictions(dataset, user_ids, model, weights, book_features):
     
         scores = model.predict(mapping[0][user_id], np.arange(num_items))
 
-        known_read = [{"title": book_features[int(inv_mapping[2][x])-1]['title'], 
+        known_read = [{"title": book_features['title'][int(inv_mapping[2][x])-1], 
                        "rating" : weight[in_map ,x],
-                       "img" : book_features[int(inv_mapping[2][x])-1]['image_url']} 
+                       "img" : book_features['image_url'][int(inv_mapping[2][x])-1]} 
                        for x in range(num_items) if weight[in_map ,x] > 0]
         
-        top_items = [{"title": book_features[int(inv_mapping[2][x])-1]['title'],
-                       "img": book_features[int(inv_mapping[2][x])-1]['image_url']}
+        top_items = [{"title": book_features['title'][int(inv_mapping[2][x])-1],
+                       "img": book_features['image_url'][int(inv_mapping[2][x])-1]}
                        for x in np.argsort(-scores)] 
 
         known_read.sort(key=lambda dict: dict["rating"], reverse = True)
@@ -157,8 +159,6 @@ def get_predictions(dataset, user_ids, model, weights, book_features):
                     count+=1
                 if count == 5:
                     break
-        
-
 
         st.session_state.known_df = pd.DataFrame(data = known_read).head(5)
         st.session_state.rec_df = pd.DataFrame(data= rec_list).head(5)
@@ -170,14 +170,13 @@ def run_model(curr_ratings):
     if len(curr_ratings) == 0:
         cut_frame = title_frame.head(5)
         display_data = cut_frame.loc[:, search_list.columns != 'book_id']
-        display_data['img'] = display_data.apply( lambda x: path_to_image_html(x['img_url']), axis = 1 )
-        final = display_data.loc[:, display_data.columns != 'img_url']
+        display_data['img'] = display_data.apply( lambda x: path_to_image_html(x['image_url']), axis = 1 )
+        final = display_data.loc[:, display_data.columns != 'image_url']
         error.write(final.to_html(escape=False), unsafe_allow_html=True)
 
     else:
-        st.write(ratings[:5])
-        '''dataset, item_features = dataset_build(st.session_state.rate_data, st.session_state.list, st.session_state.book_data)
-        interactions, weights = return_interactions(dataset, st.session_state.list)
+        dataset, item_features = dataset_build(ratings, curr_ratings, book_features)
+        interactions, weights = return_interactions(dataset, curr_ratings)
 
         weights = weights.tocsr().tocoo()
         interactions = interactions.tocsr().tocoo()
@@ -187,7 +186,7 @@ def run_model(curr_ratings):
         model = LightFM(no_components = 20, loss='warp')
         model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 25, num_threads = 7)
 
-        get_predictions(dataset, [-1], model, weights, st.session_state.book_data)'''
+        get_predictions(dataset, [-1], model, weights, book_features)
 
 
 def error_check():
@@ -224,7 +223,7 @@ def submit_entry():
         st.session_state['bn'] = ""
 
 def give_recs():
-        curr_ratings = st.session_state.list
+        curr_ratings = pd.DataFrame(data=st.session_state.list)
         if len(curr_ratings) == 0:
             st.write()
         run_model(curr_ratings)
@@ -256,8 +255,8 @@ if st.session_state.bcb and st.session_state.bn != "":
 
     else:
         display_data = search_list.loc[:, search_list.columns != 'book_id']
-        display_data['img'] = display_data.apply( lambda x: path_to_image_html(x['img_url']), axis = 1 )
-        final = display_data.loc[:, display_data.columns != 'img_url']
+        display_data['img'] = display_data.apply( lambda x: path_to_image_html(x['image_url']), axis = 1 )
+        final = display_data.loc[:, display_data.columns != 'image_url']
         
         with error.container():
 
