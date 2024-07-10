@@ -1,3 +1,5 @@
 requests
 scipy
+os
+csv
 lightfm
