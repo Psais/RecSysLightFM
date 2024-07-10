@@ -51,7 +51,7 @@ def give_titles(book_features):
     title_list = {"book_id" : [x['book_id'] for x in book_features], 
                   "title" : [x['title'] for x in book_features], 
                   "img_url": [x['image_url'] for x in book_features]}
-    title_frame = pd.DataFrame(data = title_list)
+    title_frame = book_feature[['book_id', 'title', 'image_url']]
     return title_frame
 
 
