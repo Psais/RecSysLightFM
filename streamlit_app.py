@@ -40,9 +40,8 @@ def get_data(string):
         if not os.path.exists(dest_path):
             _download(ratings_url, dest_path)
     
-    with open(dest_path, "r") as dat:
-        dat = [x for x in csv.DictReader(dat)] 
-        return dat
+    dat = pd.read_csv(dest_path)
+    return dat
 
 def get_ratings():
 
