@@ -1,4 +1,3 @@
-requests
 scipy
 os
 csv
