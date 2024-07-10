@@ -48,7 +48,7 @@ def get_ratings():
     return get_data("ratings"), get_data("books")
 
 def give_titles(book_features):
-    title_frame = book_feature[['book_id', 'title', 'image_url']]
+    title_frame = book_features[['book_id', 'title', 'image_url']]
     return title_frame
 
 
