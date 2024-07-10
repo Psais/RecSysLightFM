@@ -1,0 +1,1 @@
+This folder holds the main data that the code lifts. It comes directly from "https://raw.githubusercontent.com/zygmuntz/goodbooks-10k/master/".
