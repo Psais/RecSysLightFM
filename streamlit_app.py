@@ -223,13 +223,11 @@ def submit_entry():
         st.session_state['bn'] = ""
 
 def give_recs():
+    if st.session_state.mc:
         curr_ratings = pd.DataFrame(data=st.session_state.list)
-        if len(curr_ratings) == 0:
-            st.write()
+        if len(curr_ratings.index) == 0:
+            error.text("No ratings, matey?")
         run_model(curr_ratings)
-
-
-
 
 if 'list' not in st.session_state:    
     st.session_state['list'] = []
