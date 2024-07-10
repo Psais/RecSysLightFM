@@ -184,7 +184,7 @@ def run_model(curr_ratings):
         scaled_weights = scale_weights(weights, interactions)
 
         model = LightFM(no_components = 20, loss='warp')
-        model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 25, num_threads = 7)
+        model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 20, num_threads = 7)
 
         get_predictions(dataset, [-1], model, weights, book_features)
 
