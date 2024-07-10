@@ -1,7 +1,3 @@
 scipy
-numpy
-pandas
-csv 
-os
 requests
 lightfm
