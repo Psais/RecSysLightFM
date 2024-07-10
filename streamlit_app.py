@@ -179,8 +179,8 @@ def run_model(curr_ratings):
         error.write(final.to_html(escape=False), unsafe_allow_html=True)
 
     else:
-        dataset, item_features = dataset_build(st.session_state.rate_data, curr_ratings, st.session_state.book_data)
-        interactions, weights = return_interactions(dataset, curr_ratings)
+        dataset, item_features = dataset_build(st.session_state.rate_data, st.session_state.list, st.session_state.book_data)
+        interactions, weights = return_interactions(dataset, st.session_state.list)
 
         weights = weights.tocsr().tocoo()
         interactions = interactions.tocsr().tocoo()
