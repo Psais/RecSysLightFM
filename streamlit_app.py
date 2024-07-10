@@ -179,7 +179,7 @@ def run_model(curr_ratings):
         error.write(final.to_html(escape=False), unsafe_allow_html=True)
 
     else:
-        dataset, item_features = dataset_build(ratings, curr_ratings, book_features)
+        dataset, item_features = dataset_build(st.session_state.rate_data, curr_ratings, st.session_state.book_data)
         interactions, weights = return_interactions(dataset, curr_ratings)
 
         weights = weights.tocsr().tocoo()
@@ -190,7 +190,7 @@ def run_model(curr_ratings):
         model = LightFM(no_components = 20, loss='warp')
         model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 25, num_threads = 7)
 
-        get_predictions(dataset, [-1], model, weights, book_features)
+        get_predictions(dataset, [-1], model, weights, st.session_state.book_data)
 
 
 def error_check():
