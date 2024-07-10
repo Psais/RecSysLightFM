@@ -44,7 +44,7 @@ def get_data(string):
         dat = [x for x in csv.DictReader(dat)] 
         return dat
         
-@st.cache_data
+
 def get_ratings():
 
     return get_data("ratings"), get_data("books")
