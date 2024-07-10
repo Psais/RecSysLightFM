@@ -44,7 +44,7 @@ def get_data(string):
         dat = [x for x in csv.DictReader(dat)] 
         return dat
         
-@st.cache_data
+
 def get_ratings():
 
     return get_data("ratings"), get_data("books")
@@ -61,7 +61,13 @@ st.title("Book Recommender [Only till 2017, Sorry..]")
 
 st.write("Hit enter without text in the book-input to exit rating process!\n")
 
-ratings, book_features = get_ratings()
+if 'rate_data' not in st.session_state:
+    st.session_state.rate_data = get_ratings()[0]
+
+if 'book_data' not in st.session_state:
+    st.session_state.book_data = get_ratings()[1]
+
+ratings, book_features = st.session_state.rate_data, st.session_state.book_data
 
 if 'title_frame' not in st.session_state:
     st.session_state['title_frame'] = give_titles(book_features) 
