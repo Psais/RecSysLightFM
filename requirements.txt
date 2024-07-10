@@ -1,4 +1,3 @@
 scipy
-os
-csv
+requests
 lightfm
