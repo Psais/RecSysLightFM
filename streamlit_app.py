@@ -157,11 +157,11 @@ def get_predictions(dataset, user_ids, model, weights, book_features):
                 if x['title'] not in known_read_set:
                     rec_list.append(x)
                     count+=1
-                if count == 5:
+                if count == 20:
                     break
 
         st.session_state.known_df = pd.DataFrame(data = known_read).head(5)
-        st.session_state.rec_df = pd.DataFrame(data= rec_list).head(5)
+        st.session_state.rec_df = pd.DataFrame(data= rec_list).head(10)
 
 
 
@@ -184,7 +184,7 @@ def run_model(curr_ratings):
         scaled_weights = scale_weights(weights, interactions)
 
         model = LightFM(no_components = 20, loss='warp')
-        model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 20, num_threads = 7)
+        model.fit(interactions, item_features = item_features, sample_weight = scaled_weights, epochs = 10, num_threads = 7)
 
         get_predictions(dataset, [-1], model, weights, book_features)
 
@@ -225,9 +225,10 @@ def submit_entry():
 def give_recs():
     if st.session_state.mc:
         curr_ratings = pd.DataFrame(data=st.session_state.list)
-        if len(curr_ratings.index) == 0:
-            error.text("No ratings, matey?")
+        if len(curr_ratings) == 0:
+            st.write()
         run_model(curr_ratings)
+
 
 if 'list' not in st.session_state:    
     st.session_state['list'] = []
@@ -237,6 +238,12 @@ if 'bcb' not in st.session_state:
 
 if 'bcr' not in st.session_state:
     st.session_state['bcr'] = False
+
+if 'rec_df' not in st.session_state:
+    st.session_state['rec_df'] = pd.DataFrame() 
+
+if 'known_df' not in st.session_state:
+    st.session_state['known_df'] = pd.DataFrame()
 
 
 error = st.empty()
@@ -285,13 +292,14 @@ with st.form(key = "Book_Entry", clear_on_submit=True, border=True):
 model_runcheck = st.checkbox("Are you done rating?", key = 'mc', on_change=give_recs)
 
 cont = st.empty()
+   
+
 
 if st.session_state.mc == True:
-   
+
     rec_df = st.session_state.rec_df
-    known_df = st.session_state.known_df
-    
-    
+    known_df = st.session_state.known_df    
+ 
     display_data_rec = rec_df.loc[:, rec_df.columns != 'book_id']
     display_data_rec['image'] = display_data_rec.apply( lambda x: path_to_image_html(x['img']), axis = 1 )
 
